@@ -1,5 +1,5 @@
 {
   "framework": "nextjs",
-  "buildCommand": "pnpm runts ./test/initDevAndTest.ts true _community true && pnpm run build:core && pnpm run build:app",
+  "buildCommand": "node --no-deprecation --import @swc-node/register/esm-register ./test/initDevAndTest.ts true _community true && pnpm run build:core && pnpm run build:app",
   "outputDirectory": ".next"
 }
