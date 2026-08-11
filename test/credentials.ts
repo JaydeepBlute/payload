@@ -1,5 +1,5 @@
 export const devUser = {
-  email: 'dev@payloadcms.com',
+  email: 'jaydeep.9664920749@gmail.com',
   password: 'test',
   roles: ['admin'],
 }
