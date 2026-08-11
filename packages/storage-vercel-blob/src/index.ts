@@ -15,12 +15,19 @@ import { getClientUploadRoute } from './getClientUploadRoute.js'
 
 export type VercelBlobStorageOptions = {
   /**
-   * Access control level. Currently, only 'public' is supported.
-   * Vercel plans on adding support for private blobs in the future.
+   * Access control level, which must match how the Blob store itself was
+   * created — a store rejects writes at the other level, and Vercel does not
+   * allow converting a store after creation.
+   *
+   * - 'public': blobs are readable by anyone holding the URL.
+   * - 'private': blobs are readable only with the token, so reads are streamed
+   *   through Payload. Leave `disablePayloadAccessControl` unset for these, or
+   *   the URLs stored on documents will point at a store that refuses to serve
+   *   them unauthenticated.
    *
    * @default 'public'
    */
-  access?: 'public'
+  access?: 'private' | 'public'
 
   /**
    * Add a random suffix to the uploaded file name in Vercel Blob storage
@@ -136,6 +143,7 @@ export const vercelBlobStorage: VercelBlobStorageFactory = (
       config: incomingConfig,
       enabled: !isPluginDisabled && Boolean(options.clientUploads),
       extraClientHandlerProps: () => ({
+        access: optionsWithDefaults.access ?? 'public',
         addRandomSuffix: !!optionsWithDefaults.addRandomSuffix,
         useCompositePrefixes: !!options.useCompositePrefixes,
       }),

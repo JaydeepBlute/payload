@@ -43,6 +43,11 @@ export default buildConfigWithDefaults({
   // keep using the filesystem.
   storage: [
     vercelBlobStorage({
+      // The connected store was created with private access, and Vercel cannot
+      // convert a store after creation. Writing with 'public' is rejected
+      // outright, so uploads have to use 'private' and are then streamed back
+      // through Payload's own /api/media/file route rather than a blob URL.
+      access: 'private',
       collections: {
         [mediaSlug]: true,
       },

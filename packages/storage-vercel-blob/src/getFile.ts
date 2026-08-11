@@ -1,12 +1,13 @@
 import type { CollectionConfig, PayloadRequest } from 'payload'
 
 import { getFilePrefix as getDocPrefix } from '@payloadcms/plugin-cloud-storage/utilities'
-import { BlobNotFoundError, head } from '@vercel/blob'
+import { BlobNotFoundError, get, head } from '@vercel/blob'
 import { getRangeRequestInfo } from 'payload/internal'
 
 import { generateURL } from './generateURL.js'
 
 interface GetFileArgs {
+  access: 'private' | 'public'
   baseUrl: string
   cacheControlMaxAge: number
   clientUploadContext?: unknown
@@ -21,6 +22,7 @@ interface GetFileArgs {
 }
 
 export async function getFile({
+  access,
   baseUrl,
   cacheControlMaxAge,
   clientUploadContext,
@@ -99,23 +101,43 @@ export async function getFile({
       })
     }
 
-    const response = await fetch(`${fileUrl}?${uploadedAtString}`, {
-      headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate',
-        Pragma: 'no-cache',
-        ...(rangeResult.type === 'partial' && {
-          Range: `bytes=${rangeResult.rangeStart}-${rangeResult.rangeEnd}`,
-        }),
-      },
-    })
+    const fetchHeaders = {
+      'Cache-Control': 'no-store, no-cache, must-revalidate',
+      Pragma: 'no-cache',
+      ...(rangeResult.type === 'partial' && {
+        Range: `bytes=${rangeResult.rangeStart}-${rangeResult.rangeEnd}`,
+      }),
+    }
 
-    if (!response.ok || !response.body) {
+    let body: null | ReadableStream<Uint8Array> = null
+
+    if (access === 'private') {
+      // A private store answers unauthenticated requests to the blob URL with a
+      // 403, so the bytes have to come through the SDK, which signs the request
+      // with the token. `get` resolves to null rather than throwing when the
+      // blob is missing.
+      const result = await get(fileUrl, {
+        access: 'private',
+        headers: fetchHeaders,
+        token,
+      })
+
+      body = result?.stream ?? null
+    } else {
+      const response = await fetch(`${fileUrl}?${uploadedAtString}`, {
+        headers: fetchHeaders,
+      })
+
+      body = response.ok ? response.body : null
+    }
+
+    if (!body) {
       return new Response(null, { status: 204, statusText: 'No Content' })
     }
 
     headers.append('Last-Modified', uploadedAtString)
 
-    return new Response(response.body, {
+    return new Response(body, {
       headers,
       status: rangeResult.status,
     })
