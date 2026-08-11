@@ -1,11 +1,12 @@
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import { fileURLToPath } from 'node:url'
 import path from 'path'
 
 import { buildConfigWithDefaults } from '../buildConfigWithDefaults.js'
 import { devUser } from '../credentials.js'
 import { LinkedinPostsCollection } from './collections/LinkedinPosts/index.js'
-import { MediaCollection } from './collections/Media/index.js'
+import { MediaCollection, mediaSlug } from './collections/Media/index.js'
 import { PostsCollection, postsSlug } from './collections/Posts/index.js'
 import { MenuGlobal } from './globals/Menu/index.js'
 
@@ -33,6 +34,18 @@ export default buildConfigWithDefaults({
   globals: [
     // ...add more globals here
     MenuGlobal,
+  ],
+  // Uploads default to writing under the collection slug on local disk, which
+  // fails on Vercel because everything outside /tmp is read-only. The adapter
+  // disables itself when the token is unset, so local dev and the test suites
+  // keep using the filesystem.
+  storage: [
+    vercelBlobStorage({
+      collections: {
+        [mediaSlug]: true,
+      },
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+    }),
   ],
   // Seeding runs on every init, including `next build` prerenders, so it has to
   // tolerate a database that already holds the seed data — re-creating the dev
