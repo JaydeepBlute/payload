@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+
 import { mediaSlug } from '../Media/index.js'
 
 export const linkedinPostsSlug = 'linkedin-posts'
@@ -10,10 +11,13 @@ export const LinkedinPostsCollection: CollectionConfig = {
     defaultColumns: ['title', 'status', 'scheduledDate'],
   },
   access: {
+    // Public: the Blute marketing site fetches posts anonymously.
     read: () => true,
-    create: () => true,
-    update: () => true,
-    delete: () => true,
+    // Authenticated only — these were previously open, which let anyone on the
+    // internet create, edit, or delete posts with an unauthenticated request.
+    create: ({ req }) => Boolean(req.user),
+    update: ({ req }) => Boolean(req.user),
+    delete: ({ req }) => Boolean(req.user),
   },
   fields: [
     {

@@ -15,6 +15,15 @@ const dirname = path.dirname(filename)
 export default buildConfigWithDefaults({
   // ...extend config here
   collections: [PostsCollection, MediaCollection, LinkedinPostsCollection],
+  // The Blute marketing site reads linkedin-posts from the browser, so those
+  // origins must be allowed explicitly — without this the API answers 200 but
+  // the browser discards the response and the site renders an empty feed.
+  cors: [
+    'https://blute.co.in',
+    'https://www.blute.co.in',
+    'https://blute-dc0d6.web.app',
+    'http://localhost:4200',
+  ],
   admin: {
     importMap: {
       baseDir: path.resolve(dirname),
