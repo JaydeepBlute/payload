@@ -8,6 +8,7 @@ import { devUser } from '../credentials.js'
 import { LinkedinPostsCollection } from './collections/LinkedinPosts/index.js'
 import { MediaCollection, mediaSlug } from './collections/Media/index.js'
 import { PostsCollection, postsSlug } from './collections/Posts/index.js'
+import { uploadDiagnosticsEndpoint } from './endpoints/uploadDiagnostics.js'
 import { MenuGlobal } from './globals/Menu/index.js'
 
 const filename = fileURLToPath(import.meta.url)
@@ -31,6 +32,7 @@ export default buildConfigWithDefaults({
     },
   },
   editor: lexicalEditor({}),
+  endpoints: [uploadDiagnosticsEndpoint],
   globals: [
     // ...add more globals here
     MenuGlobal,
