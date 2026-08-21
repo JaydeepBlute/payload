@@ -21,6 +21,11 @@ export default buildConfigWithDefaults({
   // origins must be allowed explicitly — without this the API answers 200 but
   // the browser discards the response and the site renders an empty feed.
   cors: [
+    'https://blute.org',
+    'https://www.blute.org',
+    'http://blute.org',
+    'http://www.blute.org',
+    'http://161.97.133.83',
     'https://blute.co.in',
     'https://www.blute.co.in',
     'https://blute-dc0d6.web.app',
